@@ -201,6 +201,10 @@ def _get_bucket(site: str, suffix: str) -> str:
     return f'{site}.{suffix}'
 
 
+def convert_ibrix_folder_to_site_id(site_id: str) -> str:
+    return site_id.replace('arm-', '').replace('-', '')
+
+
 def is_volatile_file(filename: str) -> bool:
     """Check if nc-file is volatile."""
     nc = netCDF4.Dataset(filename)

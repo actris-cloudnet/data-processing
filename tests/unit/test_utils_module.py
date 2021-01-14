@@ -135,3 +135,12 @@ class TestsCreateProductPutPayload:
 ])
 def test_get_model_identifier(filename, identifier):
     assert utils.get_model_identifier(filename) == identifier
+
+
+@pytest.mark.parametrize("ibrix_id, result", [
+    ('aboa', 'aboa'),
+    ('arm-darwin', 'darwin'),
+    ('arm-cape-cod', 'capecod')
+])
+def test_convert_ibrix_folder_to_site_id(ibrix_id, result):
+    assert utils.convert_ibrix_folder_to_site_id(ibrix_id) == result

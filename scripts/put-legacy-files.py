@@ -20,7 +20,6 @@ def main():
 
     config = utils.read_main_conf(ARGS)
     md_api = MetadataApi(config)
-    storage_api = StorageApi(config)
     pid_utils = PidUtils(config)
 
     site = PurePath(ARGS.path[0]).name
@@ -35,6 +34,10 @@ def main():
     for dir_name in dir_names:
         files = _get_files(ARGS.path[0], dir_name)
 
+        site_id = utils.convert_ibrix_folder_to_site_id(site)
+
+        storage_api = StorageApi(config, site_id)
+
         for file in files:
             legacy_file = LegacyFile(file)
 
@@ -43,7 +46,7 @@ def main():
                     'date_str': legacy_file.get_date_str(),
                     'product': legacy_file.get_product_type(),
                     'identifier': legacy_file.get_identifier(),
-                    'site': site
+                    'site': site_id
                 }
                 _check_if_exists(md_api, info)
             except (MiscError, HTTPError) as err:
