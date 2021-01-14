@@ -92,10 +92,10 @@ class Process:
         self.is_reprocess = args.reprocess
         self.plot_images = not args.no_img
         self.date_str = None
-        self._md_api = MetadataApi(config)
-        self._storage_api = StorageApi(config, storage_session)
-        self._pid_utils = PidUtils(config)
         self._site = self.site_meta['id']
+        self._md_api = MetadataApi(config)
+        self._storage_api = StorageApi(config, self._site, storage_session)
+        self._pid_utils = PidUtils(config)
 
     def process_model(self, uuid: Uuid, model: str) -> Uuid:
         uuid.raw, upload_filename = self._get_daily_raw_file(temp_file.name, model=model)

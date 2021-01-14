@@ -17,6 +17,7 @@ config = {
 class TestStorageApi:
 
     temp_dir = TemporaryDirectory()
+    site = 'bucharest'
 
     def test_download_product(self):
         filename = '20201121_bucharest_classification.nc'
@@ -25,9 +26,9 @@ class TestStorageApi:
             'filename': filename
         }
         file = open(f'tests/data/products/{filename}', 'rb')
-        url = f'{mock_addr}cloudnet-product-volatile/{filename}'
+        url = f'{mock_addr}{self.site}.cloudnet-product-volatile/{filename}'
         adapter.register_uri('GET', url, body=file)
-        storage_api = StorageApi(config, session)
+        storage_api = StorageApi(config, self.site, session)
         full_path = storage_api.download_product(metadata, self.temp_dir.name)
         assert os.path.isfile(full_path)
         assert full_path == f'{self.temp_dir.name}/{filename}'
@@ -43,9 +44,9 @@ class TestStorageApi:
             },
         ]
         file = open(f'tests/data/raw/chm15k/{filename}', 'rb')
-        url = f'{mock_addr}cloudnet-upload/{s3key}'
+        url = f'{mock_addr}{self.site}.cloudnet-upload/{s3key}'
         adapter.register_uri('GET', url, body=file)
-        storage_api = StorageApi(config, session)
+        storage_api = StorageApi(config, self.site, session)
         full_paths = storage_api.download_raw_files(metadata, self.temp_dir.name)
         assert os.path.isfile(full_paths[0])
         assert full_paths[0] == f'{self.temp_dir.name}/{filename}'
@@ -58,9 +59,9 @@ class TestStorageApi:
             "size": 667,
             "version": "abc"
         }
-        url = f'{mock_addr}cloudnet-product/{s3key}'
+        url = f'{mock_addr}{self.site}.cloudnet-product/{s3key}'
         adapter.register_uri('PUT', url, json=res)
-        storage_api = StorageApi(config, session)
+        storage_api = StorageApi(config, self.site, session)
         data = storage_api.upload_product(full_path, s3key)
         assert data == res
 
@@ -71,8 +72,8 @@ class TestStorageApi:
             "size": 667,
             "version": ""
         }
-        url = f'{mock_addr}cloudnet-product-volatile/{s3key}'
+        url = f'{mock_addr}{self.site}.cloudnet-product-volatile/{s3key}'
         adapter.register_uri('PUT', url, json=res)
-        storage_api = StorageApi(config, session)
+        storage_api = StorageApi(config, self.site, session)
         data = storage_api.upload_product(full_path, s3key)
         assert data == res

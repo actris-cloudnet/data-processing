@@ -10,7 +10,8 @@ from data_processing import utils
 class StorageApi:
     """Class for uploading / downloading files from the Cloudnet S3 data archive in Sodankylä."""
 
-    def __init__(self, config: dict, session=requests.Session()):
+    def __init__(self, config: dict, site: str, session=requests.Session()):
+        self.site = site
         self.session = session
         self._url = config['STORAGE-SERVICE']['url']
         self._auth = (config['STORAGE-SERVICE']['username'],
@@ -19,7 +20,7 @@ class StorageApi:
     def upload_product(self, full_path: str, s3key: str) -> dict:
         """Upload a processed Cloudnet file."""
         volatile = utils.is_volatile_file(full_path)
-        bucket = utils.get_product_bucket(volatile)
+        bucket = utils.get_product_bucket(self.site, volatile)
         headers = self._get_headers(full_path)
         url = path.join(self._url, bucket, s3key)
         res = self._put(url, full_path, headers).json()
@@ -28,7 +29,8 @@ class StorageApi:
 
     def download_raw_files(self, metadata: list, dir_name: str) -> list:
         """Download raw files."""
-        urls = [path.join(self._url, 'cloudnet-upload', row['s3key']) for row in metadata]
+        bucket = utils.get_upload_bucket(self.site)
+        urls = [path.join(self._url, bucket, row['s3key']) for row in metadata]
         full_paths = [path.join(dir_name, row['filename']) for row in metadata]
         for args in zip(urls, full_paths):
             self._get(*args)
@@ -37,7 +39,7 @@ class StorageApi:
     def download_product(self, metadata: dict, dir_name: str) -> str:
         """Download a product."""
         s3key = metadata['filename']
-        bucket = utils.get_product_bucket(metadata['volatile'])
+        bucket = utils.get_product_bucket(self.site, metadata['volatile'])
         url = path.join(self._url, bucket, s3key)
         full_path = path.join(dir_name, s3key)
         self._get(url, full_path)
@@ -45,7 +47,7 @@ class StorageApi:
 
     def delete_volatile_product(self, s3key: str) -> requests.Response:
         """Delete a volatile product."""
-        bucket = utils.get_product_bucket(volatile=True)
+        bucket = utils.get_product_bucket(self.site, True)
         url = path.join(self._url, bucket, s3key)
         res = self.session.delete(url, auth=self._auth)
         return res
@@ -76,7 +78,8 @@ class StorageApi:
             except (IndexError, ValueError):
                 continue
             s3key = product_key.replace('.nc', f"-{uuid[:8]}-{field}.png")
-            url = path.join(self._url, 'cloudnet-img', s3key)
+            bucket = utils.get_image_bucket(self.site)
+            url = path.join(self._url, bucket, s3key)
             headers = self._get_headers(temp_file.name)
             self._put(url, temp_file.name, headers=headers)
             visualizations.append({

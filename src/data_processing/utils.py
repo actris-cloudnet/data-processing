@@ -183,8 +183,22 @@ def _calc_hash_sum(filename, method, is_base64=False):
     return hash_sum.hexdigest()
 
 
-def get_product_bucket(volatile: bool = False) -> str:
-    return 'cloudnet-product-volatile' if volatile else 'cloudnet-product'
+def get_product_bucket(site: str, volatile: bool) -> str:
+    bucket_suffix = '-volatile' if volatile else ''
+    suffix = f'cloudnet-product{bucket_suffix}'
+    return _get_bucket(site, suffix)
+
+
+def get_image_bucket(site: str) -> str:
+    return _get_bucket(site, 'cloudnet-img')
+
+
+def get_upload_bucket(site: str) -> str:
+    return _get_bucket(site, 'cloudnet-upload')
+
+
+def _get_bucket(site: str, suffix: str) -> str:
+    return f'{site}.{suffix}'
 
 
 def is_volatile_file(filename: str) -> bool:

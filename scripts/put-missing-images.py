@@ -12,12 +12,13 @@ def main():
 
     config = utils.read_main_conf(ARGS)
     md_api = MetadataApi(config)
-    storage_api = StorageApi(config)
 
     site_metadata = md_api.get('api/sites', {'modelSites': True})
     sites = [site['id'] for site in site_metadata]
 
     for site in sites:
+
+        storage_api = StorageApi(config, site)
 
         payload = {'location': site, 'allVersions': True, 'developer': True}
         metadata = md_api.get('api/files', payload)

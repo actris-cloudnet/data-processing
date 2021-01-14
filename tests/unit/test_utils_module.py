@@ -73,8 +73,9 @@ def test_is_volatile_file():
 
 
 def test_get_product_bucket():
-    assert utils.get_product_bucket(True) == 'cloudnet-product-volatile'
-    assert utils.get_product_bucket(False) == 'cloudnet-product'
+    site = 'test'
+    assert utils.get_product_bucket(site, True) == f'{site}.cloudnet-product-volatile'
+    assert utils.get_product_bucket(site, False) == f'{site}.cloudnet-product'
 
 
 def test_get_product_types():
