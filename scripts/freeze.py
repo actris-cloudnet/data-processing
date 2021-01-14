@@ -16,11 +16,12 @@ def main(args, storage_session=requests.session()):
     config = read_main_conf(args)
     pid_utils = PidUtils(config)
     md_api = metadata_api.MetadataApi(config)
-    storage_api = StorageApi(config, storage_session)
     metadata = md_api.find_volatile_files_to_freeze()
     print(f'Found {len(metadata)} files to freeze.')
     temp_dir = TemporaryDirectory()
     for row in metadata:
+        site = row['site']['id']
+        storage_api = StorageApi(config, site, storage_session)
         full_path = storage_api.download_product(row, temp_dir.name)
         s3key = row['filename']
         try:

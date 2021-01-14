@@ -3,14 +3,15 @@ import subprocess
 from os import path
 import sys
 import argparse
-import test_utils.utils as utils
+import test_utils.utils as test_utils
+from data_processing import utils
 from tempfile import NamedTemporaryFile
 import re
 sys.path.append('scripts/')
 process_cloudnet = __import__("process-cloudnet")
 
 SCRIPT_PATH = path.dirname(path.realpath(__file__))
-session, adapter, mock_addr = utils.init_test_session()
+session, adapter, mock_addr = test_utils.init_test_session()
 
 
 def register_storage_urls(temp_file):
@@ -20,22 +21,27 @@ def register_storage_urls(temp_file):
             file.write(request.body.read())
         return True
 
+    site = 'bucharest'
+
     # categorize file:
-    categorize_path = f'{mock_addr}cloudnet-product/'
-    filename = '20201022_bucharest_categorize.nc'
+    product_bucket = utils.get_product_bucket(site, False)
+    categorize_path = f'{mock_addr}{product_bucket}/'
+    filename = f'20201022_{site}_categorize.nc'
     url = f'{categorize_path}{filename}'
     adapter.register_uri('GET', url, body=open(f'tests/data/products/{filename}', 'rb'))
     # product file:
-    url = f'{mock_addr}cloudnet-product-volatile/20201022_bucharest_classification.nc'
+    product_bucket = utils.get_product_bucket(site, True)
+    url = f'{mock_addr}{product_bucket}/20201022_{site}_classification.nc'
     adapter.register_uri('PUT', url, additional_matcher=save_product,
                          json={'size': 667, 'version': 'abc'})
     # images:
-    adapter.register_uri('PUT', re.compile(f'{mock_addr}cloudnet-img/(.*?)'))
+    img_bucket = utils.get_image_bucket(site)
+    adapter.register_uri('PUT', re.compile(f'{mock_addr}{img_bucket}/(.*?)'))
 
 
 def main():
-    utils.start_server(5000, 'tests/data/server/metadata/process_classification',
-                       f'{SCRIPT_PATH}/md.log')
+    test_utils.start_server(5000, 'tests/data/server/metadata/process_classification',
+                            f'{SCRIPT_PATH}/md.log')
 
     # Processes new volatile file (no prior file):
     _process()
@@ -51,9 +57,9 @@ def _process(main_extra_args=()):
             f"--stop=2020-10-23", '-p=classification']
     temp_file = NamedTemporaryFile()
     register_storage_urls(temp_file)
-    std_args = utils.start_output_capturing()
+    std_args = test_utils.start_output_capturing()
     process_cloudnet.main(args + list(main_extra_args), storage_session=session)
-    output = utils.reset_output(*std_args)
+    output = test_utils.reset_output(*std_args)
 
     try:
         subprocess.call(['pytest', '-v', f'{SCRIPT_PATH}/tests.py', '--output', output,

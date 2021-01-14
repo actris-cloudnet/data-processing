@@ -20,7 +20,7 @@ def register_storage_urls():
             file.write(request.body.read())
         return True
 
-    prod_path = f'{mock_addr}cloudnet-product-volatile/'
+    prod_path = f'{mock_addr}bucharest.cloudnet-product-volatile/'
     filename = '20201022_bucharest_categorize.nc'
     url = f'{prod_path}{filename}'
 
