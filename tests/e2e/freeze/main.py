@@ -3,13 +3,14 @@ import os
 import sys
 from tempfile import NamedTemporaryFile
 import subprocess
-import test_utils.utils as utils
+import test_utils.utils as test_utils
+from data_processing import utils
 sys.path.append('scripts/')
 freeze = __import__("freeze")
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
-session, adapter, mock_addr = utils.init_test_session()
+session, adapter, mock_addr = test_utils.init_test_session()
 temp_file = NamedTemporaryFile()
 
 
@@ -20,8 +21,11 @@ def register_storage_urls():
             file.write(request.body.read())
         return True
 
-    prod_path = f'{mock_addr}bucharest.cloudnet-product-volatile/'
-    filename = '20201022_bucharest_categorize.nc'
+    site = 'bucharest'
+
+    product_bucket = utils.get_product_bucket(site, True)
+    prod_path = f'{mock_addr}{product_bucket}/'
+    filename = f'20201022_{site}_categorize.nc'
     url = f'{prod_path}{filename}'
 
     adapter.register_uri('DELETE', url)
@@ -32,8 +36,8 @@ def register_storage_urls():
 
 def main():
 
-    utils.start_server(5000, 'tests/data/server/metadata/freeze', f'{SCRIPT_PATH}/md.log')
-    utils.start_server(5001, 'tests/data/server/pid', f'{SCRIPT_PATH}/pid.log')
+    test_utils.start_server(5000, 'tests/data/server/metadata/freeze', f'{SCRIPT_PATH}/md.log')
+    test_utils.start_server(5001, 'tests/data/server/pid', f'{SCRIPT_PATH}/pid.log')
     register_storage_urls()
 
     freeze.main([f"--config-dir=tests/data/config"], storage_session=session)

@@ -26,7 +26,7 @@ class TestStorageApi:
             'filename': filename
         }
         file = open(f'tests/data/products/{filename}', 'rb')
-        url = f'{mock_addr}{self.site}.cloudnet-product-volatile/{filename}'
+        url = f'{mock_addr}cloudnet-product-volatile-{self.site}/{filename}'
         adapter.register_uri('GET', url, body=file)
         storage_api = StorageApi(config, self.site, session)
         full_path = storage_api.download_product(metadata, self.temp_dir.name)
@@ -44,7 +44,7 @@ class TestStorageApi:
             },
         ]
         file = open(f'tests/data/raw/chm15k/{filename}', 'rb')
-        url = f'{mock_addr}{self.site}.cloudnet-upload/{s3key}'
+        url = f'{mock_addr}cloudnet-upload-{self.site}/{s3key}'
         adapter.register_uri('GET', url, body=file)
         storage_api = StorageApi(config, self.site, session)
         full_paths = storage_api.download_raw_files(metadata, self.temp_dir.name)
@@ -59,7 +59,7 @@ class TestStorageApi:
             "size": 667,
             "version": "abc"
         }
-        url = f'{mock_addr}{self.site}.cloudnet-product/{s3key}'
+        url = f'{mock_addr}cloudnet-product-{self.site}/{s3key}'
         adapter.register_uri('PUT', url, json=res)
         storage_api = StorageApi(config, self.site, session)
         data = storage_api.upload_product(full_path, s3key)
@@ -72,7 +72,7 @@ class TestStorageApi:
             "size": 667,
             "version": ""
         }
-        url = f'{mock_addr}{self.site}.cloudnet-product-volatile/{s3key}'
+        url = f'{mock_addr}cloudnet-product-volatile-{self.site}/{s3key}'
         adapter.register_uri('PUT', url, json=res)
         storage_api = StorageApi(config, self.site, session)
         data = storage_api.upload_product(full_path, s3key)

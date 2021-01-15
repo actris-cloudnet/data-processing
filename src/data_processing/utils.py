@@ -185,8 +185,8 @@ def _calc_hash_sum(filename, method, is_base64=False):
 
 def get_product_bucket(site: str, volatile: bool) -> str:
     bucket_suffix = '-volatile' if volatile else ''
-    suffix = f'cloudnet-product{bucket_suffix}'
-    return _get_bucket(site, suffix)
+    prefix = f'cloudnet-product{bucket_suffix}'
+    return _get_bucket(site, prefix)
 
 
 def get_image_bucket(site: str) -> str:
@@ -197,8 +197,8 @@ def get_upload_bucket(site: str) -> str:
     return _get_bucket(site, 'cloudnet-upload')
 
 
-def _get_bucket(site: str, suffix: str) -> str:
-    return f'{site}.{suffix}'
+def _get_bucket(site: str, prefix: str) -> str:
+    return f'{prefix}-{site}'
 
 
 def convert_ibrix_folder_to_site_id(site_id: str) -> str:
